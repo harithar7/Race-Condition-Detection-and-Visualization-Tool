@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Race Condition Detection &amp; Visualization Tool</title>
+
+<!-- CodeMirror (self-hosted) -->
+  <link rel="stylesheet" href="/static/vendor/codemirror.min.css"/>
+  <link rel="stylesheet" href="/static/vendor/dracula.min.css"/>
+
+  <!-- App stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M9.5 10l2 2 4-4" stroke="#6c63ff"/>
+    </svg>
+    <div>
+      <h1>Race Condition Detector</h1>
+      <div class="subtitle">Static &amp; Simulated Dynamic Analysis for Python</div>
+    </div>
+  </div>
+
+  <div class="header-spacer"></div>
+  <span class="header-badge">⌨ Ctrl+Enter to analyze</span>
+</header>
+
+<!-- ── Main layout ───────────────────────────────────────────────────────── -->
+<div class="main-grid">
+
+  <!-- ── Left: Code Editor ──────────────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+      </svg>
+      <span class="panel-title">Python Source Code</span>
+    </div>
+
+    <div class="editor-container" style="position:relative">
+      <!-- CodeMirror mounts here -->
+      <div id="editor-mount" style="height:100%; overflow:hidden;"></div>
+
+      <!-- Analyzing overlay -->
+      <div id="analyzing-overlay" class="analyzing-overlay">
+        <div class="spinner"></div>
+        <span style="color:#9fa8b3; font-size:13px">Analyzing…</span>
+      </div>
+    </div>
+
+    <!-- Error bar -->
+    <div id="error-alert" class="error-alert"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <!-- Examples dropdown -->
+      <div id="examples-dropdown" class="examples-dropdown">
+        <button id="btn-examples" class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Examples ▾
+        </button>
+        <div id="examples-menu" class="dropdown-menu">
+          <div class="dropdown-item" style="color:#9fa8b3;font-size:12px">Loading…</div>
+        </div>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <button id="btn-clear" class="btn btn-ghost btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Clear
+      </button>
+
+      <button id="btn-analyze" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Analyze
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Right: Results ─────────────────────────────────────────────────── -->
+  <div class="panel">
+    <!-- Summary bar (hidden until analysis runs) -->
+    <div id="summary-bar" class="summary-bar" style="display:none">
+      <div class="stat-item">
+        <span id="stat-races" class="stat-value danger">—</span>
+        <span class="stat-label">Race Conditions</span>
+      </div>
+      <div class="stat-item">
+        <span id="stat-threads" class="stat-value info">—</span>
+        <span class="stat-label">Threads</span>
+      </div>
+      <div class="stat-item">
+        <span id="stat-vars" class="stat-value warning">—</span>
+        <span class="stat-label">Shared Variables</span>
+      </div>
+      <div class="stat-item">
+        <span id="stat-interleavings" class="stat-value" style="color:#9fa8b3">—</span>
+        <span class="stat-label">Interleavings</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="races">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Race Conditions
+        <span id="races-badge" class="tab-badge" style="display:none"></span>
+      </button>
+      <button class="tab-btn" data-tab="suggestions">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Suggestions
+      </button>
+      <button class="tab-btn" data-tab="viz">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Thread Timeline
+      </button>
+    </div>
+
+    <!-- Tab: Race Conditions -->
+    <div id="tab-races" class="tab-content active">
+      <div id="race-list" class="race-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>Paste Python code on the left and click <strong>Analyze</strong>.</p>
+          <span class="hint">Or pick an example from the dropdown.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Suggestions -->
+    <div id="tab-suggestions" class="tab-content">
+      <div id="suggestion-list" class="suggestion-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>Synchronization suggestions will appear here after analysis.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Thread Timeline Visualization -->
+    <div id="tab-viz" class="tab-content">
+      <div class="viz-container">
+        <!-- Legend -->
+        <div class="viz-legend">
+          <span style="font-size:11px;color:#9fa8b3;font-weight:600">LEGEND:</span>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f44336"></div>
+            <span>Write</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#2196f3"></div>
+            <span>Read</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#4caf50"></div>
+            <span>Lock acquire</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#8bc34a"></div>
+            <span>Lock release</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#ff5722; border: 2px dashed #ff5722;"></div>
+            <span>Race conflict</span>
+          </div>
+        </div>
+
+        <!-- SVG renders here -->
+        <div id="timeline-svg-wrapper" style="overflow-x:auto; min-height:120px;">
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <p>Thread timeline will appear here after analysis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .panel -->
+</div><!-- .main-grid -->
+
+<!-- Tooltip (global) -->
+<div class="viz-tooltip" id="viz-tooltip"></div>
+
+<!-- Scripts (self-hosted vendor) -->
+<!-- D3.js -->
+<script src="/static/vendor/d3.min.js"></script>
+<!-- CodeMirror core + Python mode -->
+<script src="/static/vendor/codemirror.min.js"></script>
+<script src="/static/vendor/python.min.js"></script>
+<!-- App scripts -->
+<script src="/static/js/visualization.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
