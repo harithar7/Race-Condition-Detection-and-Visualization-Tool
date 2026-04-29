@@ -20,7 +20,7 @@ EXAMPLES = {
     "counter": {
         "title": "Shared Counter (classic race)",
         "description": (
-            "Two threads increment a shared counter 10 000 times each. "
+            "Two threads increment a shared counter 10,000 times each. "
             "Without a lock the final value is unpredictable."
         ),
         "code": """\
