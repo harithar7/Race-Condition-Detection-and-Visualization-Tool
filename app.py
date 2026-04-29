@@ -113,10 +113,10 @@ t2.join()
 """,
     },
     "lazy_init": {
-        "title": "Lazy Initialisation (check-then-act)",
+        "title": "Lazy Initialization (check-then-act)",
         "description": (
             "Two threads both check whether a shared resource has been "
-            "initialised and may both proceed to initialise it. "
+            "initialized and may both proceed to initialize it. "
             "A classic 'check-then-act' race."
         ),
         "code": """\
@@ -124,13 +124,13 @@ import threading
 
 resource = None
 
-def initialise():
+def initialize():
     global resource
-    if resource is None:        # check
-        resource = "initialised"  # act — another thread may also do this
+    if resource is None:          # check
+        resource = "initialized"  # act — another thread may also do this
 
-t1 = threading.Thread(target=initialise)
-t2 = threading.Thread(target=initialise)
+t1 = threading.Thread(target=initialize)
+t2 = threading.Thread(target=initialize)
 t1.start()
 t2.start()
 t1.join()
@@ -186,4 +186,5 @@ def examples():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug, host="0.0.0.0", port=port)

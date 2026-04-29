@@ -5,14 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Race Condition Detection &amp; Visualization Tool</title>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-
-  <!-- CodeMirror -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+<!-- CodeMirror (self-hosted) -->
+  <link rel="stylesheet" href="/static/vendor/codemirror.min.css"/>
+  <link rel="stylesheet" href="/static/vendor/dracula.min.css"/>
 
   <!-- App stylesheet -->
   <link rel="stylesheet" href="/static/css/style.css"/>
@@ -220,12 +215,12 @@
 <!-- Tooltip (global) -->
 <div class="viz-tooltip" id="viz-tooltip"></div>
 
-<!-- Scripts -->
+<!-- Scripts (self-hosted vendor) -->
 <!-- D3.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="/static/vendor/d3.min.js"></script>
 <!-- CodeMirror core + Python mode -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="/static/vendor/codemirror.min.js"></script>
+<script src="/static/vendor/python.min.js"></script>
 <!-- App scripts -->
 <script src="/static/js/visualization.js"></script>
 <script src="/static/js/main.js"></script>

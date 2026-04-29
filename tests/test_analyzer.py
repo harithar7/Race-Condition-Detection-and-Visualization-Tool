@@ -237,12 +237,12 @@ class TestRaceConditionDetection:
         code = (
             "import threading\n"
             "resource = None\n"
-            "def initialise():\n"
+            "def initialize():\n"
             "    global resource\n"
             "    if resource is None:\n"
             "        resource = 'done'\n"
-            "t1 = threading.Thread(target=initialise)\n"
-            "t2 = threading.Thread(target=initialise)\n"
+            "t1 = threading.Thread(target=initialize)\n"
+            "t2 = threading.Thread(target=initialize)\n"
         )
         result = static_analyzer.analyze(code)
         assert len(result["race_conditions"]) > 0
